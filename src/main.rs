@@ -15,6 +15,7 @@ fn search_dir(dir: &Path, search_string: &str) -> (u32, u32, u32, u32) {
         let path = entry.path();
         if path.is_file() {
             num_files += 1;
+
             let file = match fs::File::open(path.clone()) {
                 Ok(file) => file,
                 Err(_) => continue,
@@ -22,6 +23,11 @@ fn search_dir(dir: &Path, search_string: &str) -> (u32, u32, u32, u32) {
             let mut reader = std::io::BufReader::new(file);
             let mut file_matches = 0;
             let mut buffer = String::new();
+
+            if path.as_os_str().to_str().unwrap().contains(search_string) {
+                file_matches += 1;
+            }
+
             loop {
                 let bytes_read = match reader.read_line(&mut buffer) {
                     Ok(bytes_read) => bytes_read,
@@ -83,7 +89,7 @@ fn main() {
     if elapsed_seconds > 0 {
         elapsed_time_string.push_str(&format!("{:02}s ", elapsed_seconds));
     }
-    let elapsed_milliseconds = ((elapsed_time_secs - elapsed_seconds as f64) * 1000.0) as u64;
+    let elapsed_milliseconds = (elapsed_time.as_millis() % 1000) as u64;
     if elapsed_milliseconds > 0 {
         elapsed_time_string.push_str(&format!("{:02}ms ", elapsed_milliseconds));
     }
